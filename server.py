@@ -76,7 +76,9 @@ async def health():
 
 
 @app.post("/reset")
-async def reset(req: ResetRequest):
+async def reset(req: Optional[ResetRequest] = None):
+    if req is None:
+        req = ResetRequest()
     env = _get_env()
     difficulty = None
     if req.difficulty:
