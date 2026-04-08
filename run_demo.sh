@@ -6,10 +6,10 @@
 echo "🚀 Launching OpenEnv Dashboard..."
 
 # 1. Check for API Key
-if [ -z "$GROQ_API_KEY" ]; then
-    echo "⚠️ GROQ_API_KEY is not set. Please enter your API key to proceed (or press Ctrl+C to cancel):"
-    read -p "API Key: " GROQ_API_KEY
-    export GROQ_API_KEY=$GROQ_API_KEY
+if [ -z "$HF_TOKEN" ] && [ -z "$OPENAI_API_KEY" ]; then
+    echo "⚠️ OPENAI_API_KEY is not set. Please enter your API key to proceed (or press Ctrl+C to cancel):"
+    read -p "API Key: " OPENAI_API_KEY
+    export OPENAI_API_KEY=$OPENAI_API_KEY
 fi
 
 # 2. Activate Virtual Environment
@@ -29,7 +29,7 @@ open http://localhost:7860
 
 # 5. Launch Inference Agent in a NEW Terminal (Mac Specific)
 echo "🤖 Starting Inference Agent in a new terminal window..."
-osascript -e "tell application \"Terminal\" to do script \"cd $(pwd) && source venv/bin/activate && export GROQ_API_KEY=$GROQ_API_KEY && python3 inference.py\""
+osascript -e "tell application \"Terminal\" to do script \"cd $(pwd) && source venv/bin/activate && export OPENAI_API_KEY=$OPENAI_API_KEY && python3 inference.py\""
 
 echo ""
 echo "✨ Demo is now running!"

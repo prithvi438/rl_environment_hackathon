@@ -3,11 +3,12 @@
 Runs the environment with an LLM agent and computes the final score.
 Uses the server's REST API to enable live dashboard updates.
 
-Environment Variables:
-  API_BASE_URL  — OpenAI-compatible API base URL
-  MODEL_NAME    — Model identifier
-  GROQ_API_KEY  — Groq API key
-  SERVER_URL    — Dashboard server URL (default: http://localhost:7860)
+All LLM calls use the OpenAI client configured via these variables:
+  HF_TOKEN       — API key (falls back to GROQ_API_KEY)
+  API_BASE_URL   — OpenAI-compatible API base URL
+  MODEL_NAME     — Model identifier
+  LOCAL_IMAGE_NAME — (Optional) Local container image name for self-hosted models
+  SERVER_URL     — Dashboard server URL (default: http://localhost:7860)
 """
 
 from __future__ import annotations
@@ -31,13 +32,22 @@ from cs_env.models import (
     StepFeedback,
 )
 
+# ── Logging (must be initialized before any log usage) ────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+log = logging.getLogger("inference")
+
 # ── Configuration ─────────────────────────────
-API_BASE_URL = os.environ.get("API_BASE_URL") or "https://api.groq.com/openai/v1"
-MODEL_NAME = os.environ.get("MODEL_NAME") or "llama-3.3-70b-versatile"
-HF_TOKEN = os.environ.get("HF_TOKEN") or os.environ.get("GROQ_API_KEY")
+API_BASE_URL = os.environ.get("API_BASE_URL") or "https://api.openai.com/v1"
+MODEL_NAME = os.environ.get("MODEL_NAME") or "gpt-4o-mini"
+HF_TOKEN = os.environ.get("HF_TOKEN") or os.environ.get("OPENAI_API_KEY")
+LOCAL_IMAGE_NAME = os.environ.get("LOCAL_IMAGE_NAME")  # Optional: for self-hosted models
 
 if not HF_TOKEN:
-    log.warning("[WARNING] HF_TOKEN / GROQ_API_KEY environment variable is not set. The evaluation system must provide it.")
+    log.warning("[WARNING] HF_TOKEN / OPENAI_API_KEY environment variable is not set. The evaluation system must provide it.")
 
 
 ENV_SEED = int(os.environ.get("ENV_SEED", "42"))
@@ -134,12 +144,7 @@ def retry_with_backoff(max_retries=5, initial_delay=1):
         return wrapper
     return decorator
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
-log = logging.getLogger("inference")
+# (Logging already configured at module top)
 
 
 def build_system_prompt(obs_dict: dict) -> str:

@@ -16,12 +16,18 @@ from cs_env.state import EpisodeState
 
 
 class LLMJudge:
-    """LLM-based judge for qualitative evaluation of conversation."""
+    """LLM-based judge for qualitative evaluation of conversation.
+
+    Uses the same OpenAI client configuration as inference.py:
+      HF_TOKEN / OPENAI_API_KEY  — API key
+      API_BASE_URL               — OpenAI-compatible base URL
+      MODEL_NAME                 — Model identifier
+    """
 
     def __init__(self, api_key: str | None = None, base_url: str | None = None, model: str | None = None):
-        self._api_key = api_key or os.environ.get("GROQ_API_KEY")
-        self._base_url = base_url or os.environ.get("API_BASE_URL", "https://api.groq.com/openai/v1")
-        self._model = model or os.environ.get("JUDGE_MODEL_NAME", "llama-3.1-8b-instant")
+        self._api_key = api_key or os.environ.get("HF_TOKEN") or os.environ.get("OPENAI_API_KEY")
+        self._base_url = base_url or os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
+        self._model = model or os.environ.get("MODEL_NAME", "gpt-4o-mini")
         self._client = OpenAI(base_url=self._base_url, api_key=self._api_key, max_retries=3)
 
     def evaluate(self, state: EpisodeState) -> dict[str, Any]:

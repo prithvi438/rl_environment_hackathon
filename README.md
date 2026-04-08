@@ -26,7 +26,7 @@ The project follows a modular **Server-Client architecture**, enabling real-time
 ```mermaid
 graph TD
     subgraph "🤖 AI AGENT"
-        IA[Inference Script] --> |LLM Call| LLM[LLAMA-3.3-70B]
+        IA[Inference Script] -->|LLM Call| LLM[OpenAI GPT-4o-mini]
     end
 
     subgraph "🏠 CS-OPS HUB (Server.py)"
@@ -92,7 +92,7 @@ We've made it trivial to evaluate the project.
 bash setup.sh
 
 # Export your API Key
-export GROQ_API_KEY=your_key_here
+export OPENAI_API_KEY=your_key_here
 
 # Launch the visualizer AND the agent simultaneously
 bash run_demo.sh
@@ -115,8 +115,10 @@ The **Premium Visualizer** provides a deep dive into the agent's operations:
 
 | Variable | Default | Description |
 |---|---|---|
-| `API_BASE_URL` | `https://api.groq.com/openai/v1` | LLM API endpoint |
-| `MODEL_NAME` | `llama-3.3-70b-versatile` | Model identifier |
+| `API_BASE_URL` | `https://api.openai.com/v1` | LLM API endpoint |
+| `MODEL_NAME` | `gpt-4o-mini` | Model identifier |
+| `HF_TOKEN` | — | API key (falls back to `OPENAI_API_KEY`) |
+| `LOCAL_IMAGE_NAME` | — | Optional: local container image for self-hosted models |
 | `ENV_SEED` | `42` | Reproducibility seed |
 
 ---
