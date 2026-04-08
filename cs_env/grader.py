@@ -25,7 +25,7 @@ class LLMJudge:
     """
 
     def __init__(self, api_key: str | None = None, base_url: str | None = None, model: str | None = None):
-        self._api_key = api_key or os.environ.get("HF_TOKEN") or os.environ.get("OPENAI_API_KEY")
+        self._api_key = api_key or os.environ.get("HF_TOKEN") or os.environ.get("OPENAI_API_KEY") or "sk-dummy-key-to-prevent-startup-crash"
         self._base_url = base_url or os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
         self._model = model or os.environ.get("MODEL_NAME", "gpt-4o-mini")
         self._client = OpenAI(base_url=self._base_url, api_key=self._api_key, max_retries=3)
