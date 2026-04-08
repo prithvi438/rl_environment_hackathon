@@ -32,12 +32,13 @@ from cs_env.models import (
 )
 
 # ── Configuration ─────────────────────────────
-API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.groq.com/openai/v1")
-MODEL_NAME = os.environ.get("MODEL_NAME", "llama-3.3-70b-versatile")
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+API_BASE_URL = os.environ.get("API_BASE_URL") or "https://api.groq.com/openai/v1"
+MODEL_NAME = os.environ.get("MODEL_NAME") or "llama-3.3-70b-versatile"
+HF_TOKEN = os.environ.get("HF_TOKEN") or os.environ.get("GROQ_API_KEY")
 
-if not GROQ_API_KEY:
-    log.warning("[WARNING] GROQ_API_KEY environment variable is not set. The evaluation system must provide it.")
+if not HF_TOKEN:
+    log.warning("[WARNING] HF_TOKEN / GROQ_API_KEY environment variable is not set. The evaluation system must provide it.")
+
 
 ENV_SEED = int(os.environ.get("ENV_SEED", "42"))
 MAX_EPISODES = int(os.environ.get("MAX_EPISODES", "8"))
@@ -225,12 +226,13 @@ def run_episode(
     """Run a single episode and return the grade."""
     obs = env.reset(task_id=task_id, difficulty=difficulty)
     obs_dict = obs.model_dump()
+    actual_task_id = env.state().get("task_id", "cs_task_default")
 
-    log.info("[STEP] reset | task=%s | difficulty=%s",
-             env.state().get("task_id"), obs.difficulty.value)
+    print(f"[START] task={actual_task_id} env=CustomerSupport model={MODEL_NAME}", flush=True)
 
     episode_start = time.time()
     step_count = 0
+    rewards: list[float] = []
 
     while True:
         prompt = build_system_prompt(obs_dict)
@@ -249,36 +251,51 @@ def run_episode(
             response = get_action()
             reply = response.choices[0].message.content or ""
         except Exception as e:
-            log.error("[STEP] LLM error: %s", e)
+            log.error("[DEBUG] LLM error: %s", e)
             reply = '{"type": "close"}'
-
+            
         action = parse_action(reply)
         obs, feedback, done, info = env.step(action)
         obs_dict = obs.model_dump()
         step_count += 1
-
-        log.info(
-            "[STEP] step=%d | action=%s | score=%d | reward=%.4f | done=%s",
-            step_count, action.type.value, feedback.step_score, feedback.reward, done,
+        
+        reward = feedback.reward or 0.0
+        rewards.append(reward)
+        
+        error_val = info.get("error", None) or "null"
+        done_val = str(done).lower()
+        
+        # Safely represent action as a string (stripping whitespace to avoid newlines)
+        action_str = repr(action.type.value)
+        if action.tool_name:
+            action_str = f"{action.type.value}({action.tool_name.value})"
+            
+        print(
+            f"[STEP] step={step_count} action={action_str} reward={reward:.2f} done={done_val} error={error_val}",
+            flush=True,
         )
+
         if done: break
 
     duration = time.time() - episode_start
     grade = info.get("grade", {})
-    log.info(
-        "[STEP] episode_complete | final_score=%.4f | steps=%d",
-        grade.get("final_score", 0), step_count
-    )
+    
+    score = grade.get("final_score", 0.0)
+    success = score >= 0.5  # defined threshold
+    success_str = str(bool(success)).lower()
+    rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+    
+    print(f"[END] success={success_str} steps={step_count} rewards={rewards_str}", flush=True)
+
     return grade
 
 
 def main() -> None:
     """Main inference loop."""
-    log.info("[START]")
     log.info(f"[INFO] Dashboard: {SERVER_URL}")
     log.info("--------------------------------------------------")
 
-    client = OpenAI(base_url=API_BASE_URL, api_key=GROQ_API_KEY)
+    client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
     log.info(f"[INFO] Connecting to {SERVER_URL}...")
     try:
@@ -305,9 +322,8 @@ def main() -> None:
     avg = sum(all_scores) / len(all_scores) if all_scores else 0.0
     stats = env.curriculum.stats
 
-    log.info("[STEP] === RESULTS ===")
-    log.info("[STEP] average_score=%.4f", avg)
-    log.info("[END]")
+    log.info("[INFO] === RESULTS ===")
+    log.info("[INFO] average_score=%.4f", avg)
 
     results = {
         "scores": all_scores,
