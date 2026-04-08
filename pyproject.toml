@@ -27,6 +27,7 @@ dependencies = [
 
 [project.scripts]
 server = "server.app:main"
+agent = "inference:main"
 
 [tool.setuptools]
 packages = ["cs_env", "env"]

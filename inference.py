@@ -306,12 +306,21 @@ def main() -> None:
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
     log.info(f"[INFO] Connecting to {SERVER_URL}...")
-    try:
-        env = RemoteEnv(SERVER_URL)
-        httpx.get(f"{SERVER_URL}/health", timeout=2.0).raise_for_status()
-    except Exception as e:
-        log.error(f"[ERROR] Could not connect: {e}")
-        sys.exit(1)
+    max_wait = 30
+    start_wait = time.time()
+    while True:
+        try:
+            httpx.get(f"{SERVER_URL}/health", timeout=2.0).raise_for_status()
+            log.info("[INFO] Server is healthy!")
+            break
+        except Exception as e:
+            if time.time() - start_wait > max_wait:
+                log.error(f"[ERROR] Could not connect to server at {SERVER_URL} after {max_wait}s: {e}")
+                sys.exit(1)
+            log.info("[INFO] Waiting for server...")
+            time.sleep(2)
+
+    env = RemoteEnv(SERVER_URL)
 
     all_scores: list[float] = []
     from cs_env.tasks.task_registry import TASK_REGISTRY
