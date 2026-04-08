@@ -31,7 +31,7 @@ To bridge the gap between "Black-box AI" and human-readable evaluation, we built
 ## 🛠️ Built With
 - **Core**: Python 3.12+, OpenEnv Specification
 - **Engine**: FastAPI, Pydantic v2
-- **Agent**: Llama-3 (via Groq), LangChain-inspired structured parsing
+- **Agent**: OpenAI GPT-4o-mini, LangChain-inspired structured parsing
 - **UI**: Vanilla JS, Modern CSS (Glassmorphism), Mermaid.js
 
 ## 🏁 Impact & Evaluation
@@ -41,5 +41,5 @@ Our environment provides a **deterministic grading system** that prevents "hallu
 
 ### **How to Evaluate Our Submission**
 1.  Run `bash setup.sh` to install the environment.
-2.  Set your `GROQ_API_KEY` in Hugging Face Spaces environment variable settings.
+2.  Set your `OPENAI_API_KEY` in Hugging Face Spaces environment variable settings.
 3.  Run `bash run_demo.sh` to see the AI agent and Visualizer in synchronized action.
