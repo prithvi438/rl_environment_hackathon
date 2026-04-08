@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  env:
+    build: .
+    ports:
+      - "7860:7860"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - ENV_SEED=42
+      - PORT=7860
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+  # You can add the inference agent here if you want it to run automatically
+  # agent:
+  #   build: .
+  #   command: python inference.py
+  #   depends_on:
+  #     - env
+  #   environment:
+  #     - GROQ_API_KEY=${GROQ_API_KEY}
+  #     - API_BASE_URL=http://env:7860

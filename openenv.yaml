@@ -1,0 +1,63 @@
+name: customer-support-ops
+display_name: "Customer Support Operations Environment"
+version: "1.0.0"
+description: >
+  A production-grade OpenEnv environment simulating real-world customer support
+  workflows. Features adaptive curriculum learning, dense step-level reward
+  shaping, simulated tool APIs (CRM, orders, payments), and deterministic
+  grading across 8 scenarios at 4 difficulty levels.
+
+authors:
+  - name: "OpenEnv Contributor"
+
+license: MIT
+
+tags:
+  - customer-support
+  - multi-step
+  - tool-use
+  - curriculum-learning
+  - dense-reward
+
+environment:
+  type: sequential
+  action_space: structured
+  observation_space: structured
+
+  actions:
+    - reply
+    - lookup
+    - escalate
+    - close
+    - refund
+    - update_ticket
+    - internal_note
+
+  tools:
+    - crm_lookup
+    - order_database
+    - payment_system
+    - knowledge_base
+
+  difficulty_levels:
+    - easy
+    - medium
+    - hard
+    - expert
+
+  max_steps: 20
+  max_episodes: 8
+
+scoring:
+  step_score_range: [1, 100]
+  reward_range: [0.0, 1.0]
+  final_score_formula: "0.6 * task_completion + 0.4 * average_step_score"
+
+deployment:
+  runtime: docker
+  port: 7860
+  endpoints:
+    reset: POST /reset
+    step: POST /step
+    state: GET /state
+    health: GET /health

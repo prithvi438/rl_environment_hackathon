@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Project Specific
+results.json
+*.log
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+node_modules/
+*.log
+.env
+__pycache__/
+*.pyc
+dist/
+build/
