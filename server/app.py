@@ -52,8 +52,13 @@ _env: Optional[CustomerSupportEnv] = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _env
-    seed = int(os.environ.get("ENV_SEED", "42"))
-    _env = CustomerSupportEnv(seed=seed)
+    try:
+        seed = int(os.environ.get("ENV_SEED", "42"))
+        _env = CustomerSupportEnv(seed=seed)
+        print("[INFO] Environment initialized successfully.")
+    except Exception as e:
+        print(f"[ERROR] Failed to initialize environment: {e}")
+        raise
     yield
     _env = None
 
@@ -241,7 +246,8 @@ app.mount("/", StaticFiles(directory="static"), name="static")
 
 def main():
     port = int(os.environ.get("PORT", "7860"))
-    uvicorn.run("server.app:app", host="0.0.0.0", port=port)
+    # Use the app instance directly if running via this entry point for max reliability
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
     main()

@@ -18,6 +18,7 @@ import logging
 import os
 import sys
 import time
+import traceback
 from typing import Any
 
 import httpx
@@ -299,56 +300,63 @@ def run_episode(
 
 
 def main() -> None:
-    """Main inference loop."""
-    log.info(f"[INFO] Dashboard: {SERVER_URL}")
-    log.info("--------------------------------------------------")
+    """Main inference loop with diagnostic logging."""
+    try:
+        log.info(f"[INFO] Dashboard: {SERVER_URL}")
+        log.info("--------------------------------------------------")
 
-    client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+        client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
-    log.info(f"[INFO] Connecting to {SERVER_URL}...")
-    max_wait = 30
-    start_wait = time.time()
-    while True:
-        try:
-            httpx.get(f"{SERVER_URL}/health", timeout=2.0).raise_for_status()
-            log.info("[INFO] Server is healthy!")
-            break
-        except Exception as e:
-            if time.time() - start_wait > max_wait:
-                log.error(f"[ERROR] Could not connect to server at {SERVER_URL} after {max_wait}s: {e}")
-                sys.exit(1)
-            log.info("[INFO] Waiting for server...")
-            time.sleep(2)
+        log.info(f"[INFO] Connecting to {SERVER_URL}...")
+        max_wait = 60  # Increased to 60s for slow container starts
+        start_wait = time.time()
+        while True:
+            try:
+                httpx.get(f"{SERVER_URL}/health", timeout=2.0).raise_for_status()
+                log.info("[INFO] Server is healthy!")
+                break
+            except Exception as e:
+                if time.time() - start_wait > max_wait:
+                    log.error(f"[ERROR] Could not connect to server at {SERVER_URL} after {max_wait}s: {e}")
+                    sys.exit(1)
+                log.info(f"[INFO] Waiting for server at {SERVER_URL}... ({int(time.time() - start_wait)}s)")
+                time.sleep(3)
 
-    env = RemoteEnv(SERVER_URL)
+        env = RemoteEnv(SERVER_URL)
 
-    all_scores: list[float] = []
-    from cs_env.tasks.task_registry import TASK_REGISTRY
-    task_ids = list(TASK_REGISTRY.keys())[:MAX_EPISODES]
+        all_scores: list[float] = []
+        from cs_env.tasks.task_registry import TASK_REGISTRY
+        task_ids = list(TASK_REGISTRY.keys())[:MAX_EPISODES]
 
-    for i, tid in enumerate(task_ids):
-        log.info("[STEP] Episode %d/%d: %s", i + 1, len(task_ids), tid)
-        try:
-            grade = run_episode(client, env, task_id=tid)
-            all_scores.append(grade.get("final_score", 0.0))
-        except Exception as e:
-            log.error("[STEP] Failed: %s", e)
-            all_scores.append(0.0)
-        time.sleep(SLEEP_BETWEEN_EPISODES)
+        for i, tid in enumerate(task_ids):
+            log.info("[STEP] Episode %d/%d: %s", i + 1, len(task_ids), tid)
+            try:
+                grade = run_episode(client, env, task_id=tid)
+                all_scores.append(grade.get("final_score", 0.0))
+            except Exception as e:
+                log.error("[STEP] Failed: %s", e)
+                traceback.print_exc()
+                all_scores.append(0.0)
+            time.sleep(SLEEP_BETWEEN_EPISODES)
 
-    avg = sum(all_scores) / len(all_scores) if all_scores else 0.0
-    stats = env.curriculum.stats
+        avg = sum(all_scores) / len(all_scores) if all_scores else 0.0
+        stats = env.curriculum.stats
 
-    log.info("[INFO] === RESULTS ===")
-    log.info("[INFO] average_score=%.4f", avg)
+        log.info("[INFO] === RESULTS ===")
+        log.info("[INFO] average_score=%.4f", avg)
 
-    results = {
-        "scores": all_scores,
-        "average_score": round(avg, 4),
-        "curriculum": stats,
-    }
-    with open("results.json", "w") as f:
-        json.dump(results, f, indent=2)
+        results = {
+            "scores": all_scores,
+            "average_score": round(avg, 4),
+            "curriculum": stats,
+        }
+        with open("results.json", "w") as f:
+            json.dump(results, f, indent=2)
+            
+    except Exception as e:
+        log.error("\n[FATAL] Unhandled exception in inference agent:")
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
