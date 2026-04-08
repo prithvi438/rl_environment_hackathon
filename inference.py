@@ -233,59 +233,62 @@ def run_episode(
     episode_start = time.time()
     step_count = 0
     rewards: list[float] = []
+    info: dict[str, Any] = {}
 
-    while True:
-        prompt = build_system_prompt(obs_dict)
+    try:
+        while True:
+            prompt = build_system_prompt(obs_dict)
 
-        @retry_with_backoff(max_retries=MAX_RETRIES)
-        def get_action():
-            return client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.0,
-                max_tokens=256,
-                response_format={"type": "json_object"}
+            @retry_with_backoff(max_retries=MAX_RETRIES)
+            def get_action():
+                return client.chat.completions.create(
+                    model=MODEL_NAME,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.0,
+                    max_tokens=256,
+                    response_format={"type": "json_object"}
+                )
+
+            try:
+                response = get_action()
+                reply = response.choices[0].message.content or ""
+            except SystemExit:
+                reply = '{"type": "close"}'
+                done = True
+                break
+            except Exception as e:
+                log.error("[DEBUG] LLM error: %s", e)
+                reply = '{"type": "close"}'
+                
+            action = parse_action(reply)
+            obs, feedback, done, info = env.step(action)
+            obs_dict = obs.model_dump()
+            step_count += 1
+            
+            reward = feedback.reward or 0.0
+            rewards.append(reward)
+            
+            error_val = info.get("error", None) or "null"
+            done_val = str(done).lower()
+            
+            # Safely represent action as a string (stripping whitespace to avoid newlines)
+            action_str = repr(action.type.value)
+            if action.tool_name:
+                action_str = f"{action.type.value}({action.tool_name.value})"
+                
+            print(
+                f"[STEP] step={step_count} action={action_str} reward={reward:.2f} done={done_val} error={error_val}",
+                flush=True,
             )
 
-        try:
-            response = get_action()
-            reply = response.choices[0].message.content or ""
-        except Exception as e:
-            log.error("[DEBUG] LLM error: %s", e)
-            reply = '{"type": "close"}'
-            
-        action = parse_action(reply)
-        obs, feedback, done, info = env.step(action)
-        obs_dict = obs.model_dump()
-        step_count += 1
-        
-        reward = feedback.reward or 0.0
-        rewards.append(reward)
-        
-        error_val = info.get("error", None) or "null"
-        done_val = str(done).lower()
-        
-        # Safely represent action as a string (stripping whitespace to avoid newlines)
-        action_str = repr(action.type.value)
-        if action.tool_name:
-            action_str = f"{action.type.value}({action.tool_name.value})"
-            
-        print(
-            f"[STEP] step={step_count} action={action_str} reward={reward:.2f} done={done_val} error={error_val}",
-            flush=True,
-        )
-
-        if done: break
-
-    duration = time.time() - episode_start
-    grade = info.get("grade", {})
-    
-    score = grade.get("final_score", 0.0)
-    success = score >= 0.5  # defined threshold
-    success_str = str(bool(success)).lower()
-    rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-    
-    print(f"[END] success={success_str} steps={step_count} rewards={rewards_str}", flush=True)
+            if done: break
+    finally:
+        grade = info.get("grade", {})
+        score = grade.get("final_score", 0.0)
+        success = score >= 0.5  # defined threshold
+        success_str = str(bool(success)).lower()
+        rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+        print(f"[END] success={success_str} steps={step_count} rewards={rewards_str}", flush=True)
 
     return grade
 
