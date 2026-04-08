@@ -16,16 +16,17 @@ dependencies = [
     "pydantic>=2.0,<3.0",
     "fastapi>=0.104.0,<1.0",
     "uvicorn>=0.24.0,<1.0",
-    "openai>=1.6.0,<2.0",
+    "openai>=1.6.0",
     "httpx>=0.25.0,<1.0",
     "pyyaml>=6.0,<7.0",
     "numpy>=1.24.0,<2.0",
     "aiofiles>=23.2.1,<24.0",
     "python-dotenv>=1.0.0,<2.0",
+    "openenv-core>=0.2.0",
 ]
 
 [project.scripts]
-openenv = "server:main"
+server = "server.app:main"
 
 [tool.setuptools]
 packages = ["cs_env", "env"]

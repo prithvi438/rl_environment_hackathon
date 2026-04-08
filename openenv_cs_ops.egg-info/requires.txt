@@ -1,0 +1,10 @@
+pydantic<3.0,>=2.0
+fastapi<1.0,>=0.104.0
+uvicorn<1.0,>=0.24.0
+openai>=1.6.0
+httpx<1.0,>=0.25.0
+pyyaml<7.0,>=6.0
+numpy<2.0,>=1.24.0
+aiofiles<24.0,>=23.2.1
+python-dotenv<2.0,>=1.0.0
+openenv-core>=0.2.0

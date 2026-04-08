@@ -46,4 +46,4 @@ RUN useradd -m -u 1000 appuser && \
 USER appuser
 
 # Run the FastAPI server
-CMD ["python", "server.py"]
+CMD ["python", "server/app.py"]

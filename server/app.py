@@ -239,6 +239,9 @@ async def read_index():
 # Mount static files for assets
 app.mount("/", StaticFiles(directory="static"), name="static")
 
-if __name__ == "__main__":
+def main():
     port = int(os.environ.get("PORT", "7860"))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run("server.app:app", host="0.0.0.0", port=port)
+
+if __name__ == "__main__":
+    main()

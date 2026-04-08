@@ -1,3 +1,22 @@
+Metadata-Version: 2.4
+Name: openenv-cs-ops
+Version: 1.0.0
+Summary: Production-grade OpenEnv environment simulating customer support operations.
+Author-email: Prithvi <prithvi@example.com>
+License: MIT
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: pydantic<3.0,>=2.0
+Requires-Dist: fastapi<1.0,>=0.104.0
+Requires-Dist: uvicorn<1.0,>=0.24.0
+Requires-Dist: openai>=1.6.0
+Requires-Dist: httpx<1.0,>=0.25.0
+Requires-Dist: pyyaml<7.0,>=6.0
+Requires-Dist: numpy<2.0,>=1.24.0
+Requires-Dist: aiofiles<24.0,>=23.2.1
+Requires-Dist: python-dotenv<2.0,>=1.0.0
+Requires-Dist: openenv-core>=0.2.0
+
 ---
 title: OpenEnv CS-Ops Visualizer
 emoji: 🎧

@@ -17,7 +17,7 @@ source venv/bin/activate
 
 # 3. Start the Server in the background
 echo "🏠 Starting Environment Server on http://localhost:7860..."
-python3 server.py > server.log 2>&1 &
+python3 server/app.py > server.log 2>&1 &
 SERVER_PID=$!
 
 # Wait for server to start
