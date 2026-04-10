@@ -35,7 +35,7 @@ def test_full_episode():
     )
     obs, feedback, done, info = env.step(action1)
     print(f"\n✅ step(reply) OK — score={feedback.step_score}, reward={feedback.reward}, done={done}")
-    print(f"   Breakdown: {feedback.scoring_breakdown}")
+    print(f"   Breakdown: {feedback.evaluation_breakdown}")
 
     # Step 2: Close the ticket
     action2 = Action(type=ActionType.CLOSE)

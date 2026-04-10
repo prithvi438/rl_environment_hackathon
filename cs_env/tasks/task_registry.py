@@ -93,7 +93,7 @@ TASK_PASSWORD_RESET = TaskDefinition(
         account_created="2025-01-15",
         lifetime_value=249.99,
         previous_tickets=1,
-        satisfaction_score=4.2,
+        satisfaction_rating=4.2,
     ),
     knowledge_base={
         "password reset": (
@@ -171,7 +171,7 @@ TASK_ORDER_STATUS = TaskDefinition(
         account_created="2024-06-10",
         lifetime_value=1250.00,
         previous_tickets=3,
-        satisfaction_score=3.8,
+        satisfaction_rating=3.8,
     ),
     orders=[
         OrderRecord(
@@ -270,7 +270,7 @@ TASK_DAMAGED_PRODUCT_REFUND = TaskDefinition(
         account_created="2023-11-01",
         lifetime_value=3750.00,
         previous_tickets=5,
-        satisfaction_score=4.0,
+        satisfaction_rating=4.0,
     ),
     orders=[
         OrderRecord(
@@ -424,7 +424,7 @@ TASK_BILLING_DISCREPANCY = TaskDefinition(
         account_created="2025-03-20",
         lifetime_value=450.00,
         previous_tickets=2,
-        satisfaction_score=3.5,
+        satisfaction_rating=3.5,
     ),
     orders=[
         OrderRecord(
@@ -560,7 +560,7 @@ TASK_AMBIGUOUS_ANGRY = TaskDefinition(
         account_created="2022-01-01",
         lifetime_value=28500.00,
         previous_tickets=12,
-        satisfaction_score=2.1,
+        satisfaction_rating=2.1,
     ),
     orders=[
         OrderRecord(
@@ -720,7 +720,7 @@ TASK_MULTI_ISSUE = TaskDefinition(
         account_created="2024-02-14",
         lifetime_value=2100.00,
         previous_tickets=4,
-        satisfaction_score=3.6,
+        satisfaction_rating=3.6,
     ),
     orders=[
         OrderRecord(
@@ -849,7 +849,7 @@ TASK_ADVERSARIAL_CONFLICTING = TaskDefinition(
         account_created="2026-02-01",
         lifetime_value=150.00,
         previous_tickets=0,
-        satisfaction_score=None,
+        satisfaction_rating=None,
     ),
     orders=[
         OrderRecord(
@@ -983,7 +983,7 @@ TASK_CASCADING_FAILURE = TaskDefinition(
         account_created="2021-06-15",
         lifetime_value=125000.00,
         previous_tickets=25,
-        satisfaction_score=3.2,
+        satisfaction_rating=3.2,
     ),
     orders=[
         OrderRecord(

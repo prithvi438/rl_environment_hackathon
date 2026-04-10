@@ -78,7 +78,7 @@ class CustomerProfile(BaseModel):
     account_created: str
     lifetime_value: float = 0.001
     previous_tickets: int = 0
-    satisfaction_score: Optional[float] = None
+    satisfaction_rating: Optional[float] = None
 
 
 class OrderRecord(BaseModel):
@@ -198,7 +198,7 @@ class StepFeedback(BaseModel):
     reward: float = Field(gt=0.0, lt=1.0, description="Normalized reward 0-1")
     done: bool = False
     reason: Optional[str] = None
-    scoring_breakdown: dict[str, float] = Field(default_factory=dict)
+    evaluation_breakdown: dict[str, float] = Field(default_factory=dict)
     penalties: dict[str, float] = Field(default_factory=dict)
 
 
@@ -212,7 +212,7 @@ class EnvironmentState(BaseModel):
     step_count: int = 0
     max_steps: int = 15
     total_reward: float = 0.001
-    step_scores: list[float] = Field(default_factory=list)
+    step_score_history: list[float] = Field(default_factory=list)
     actions_taken: list[dict[str, Any]] = Field(default_factory=list)
     tools_used: list[str] = Field(default_factory=list)
     difficulty: Difficulty = Difficulty.EASY

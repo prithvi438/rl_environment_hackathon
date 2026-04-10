@@ -142,7 +142,7 @@ async function updateDashboard() {
 
         // Process Action Feed smoothly
         const actions = state.actions_taken || [];
-        const scores = state.step_scores || [];
+        const scores = state.step_score_history || [];
         let addedNew = false;
         
         for (let i = 0; i < actions.length; i++) {

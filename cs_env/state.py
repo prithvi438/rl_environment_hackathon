@@ -50,7 +50,7 @@ class EpisodeState:
         # Tracking
         self.step_count: int = 0
         self.total_reward: float = 0.001
-        self.step_scores: list[float] = []
+        self.step_score_history: list[float] = []
         self.actions_taken: list[dict[str, Any]] = []
         self.tools_used: list[str] = []
         self.tool_results: list[ToolResult] = []
@@ -141,7 +141,7 @@ class EpisodeState:
         self.tool_results.append(result)
 
     def record_step_score(self, score: float, reward: float) -> None:
-        self.step_scores.append(score)
+        self.step_score_history.append(score)
         self.total_reward += reward
 
     def mark_resolved(self) -> None:
@@ -216,7 +216,7 @@ class EpisodeState:
             step_count=self.step_count,
             max_steps=self.max_steps,
             total_reward=self.total_reward,
-            step_scores=list(self.step_scores),
+            step_score_history=list(self.step_score_history),
             actions_taken=list(self.actions_taken),
             tools_used=list(self.tools_used),
             difficulty=self.difficulty,

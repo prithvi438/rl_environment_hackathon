@@ -50,7 +50,7 @@ History:
 {formatted_history}
 
 RESPONSE FORMAT (ONLY JSON):
-{{"tone_score": 0-10, "accuracy_score": 0-10, "efficiency_score": 0-10, "reasoning": "..."}}
+{{"tone_points": 0-10, "accuracy_points": 0-10, "efficiency_points": 0-10, "reasoning": "..."}}
 """
 
         try:
@@ -63,14 +63,14 @@ RESPONSE FORMAT (ONLY JSON):
             )
             content = response.choices[0].message.content or "{}"
             result = json.loads(content)
-            total_llm_score = result.get("tone_score", 0) + result.get("accuracy_score", 0) + result.get("efficiency_score", 0)
+            total_llm_points = result.get("tone_points", 0) + result.get("accuracy_points", 0) + result.get("efficiency_points", 0)
             return {
-                "score": float(total_llm_score),  # 0-30 total
+                "points": float(total_llm_points),  # 0-30 total
                 "reasoning": result.get("reasoning", "No reason provided")
             }
         except Exception as e:
             logging.error(f"LLM Judge evaluation failed: {e}")
-            return {"score": 15.0, "reasoning": "Fallback score due to LLM error"}
+            return {"points": 15.0, "reasoning": "Fallback points due to LLM error"}
 
 class Grader:
     """Hybrid episode grader combining rules and LLM evaluation.
@@ -96,7 +96,7 @@ class Grader:
         rule_score = (task_completion * 0.6) + (avg_step * 0.4)
         
         # Hybrid combination
-        final_score = (self.DETERMINISTIC_WEIGHT * rule_score) + (self.LLM_JUDGE_WEIGHT * (llm_eval["score"] / 30.0))
+        final_score = (self.DETERMINISTIC_WEIGHT * rule_score) + (self.LLM_JUDGE_WEIGHT * (llm_eval["points"] / 30.0))
         
         anti_cheat = self._anti_cheat_adjustment(state)
         final_score = max(0.001, min(0.999, final_score * anti_cheat))
@@ -105,7 +105,7 @@ class Grader:
             "final_score": float(final_score),
             "task_completion": float(max(0.001, min(0.999, task_completion))),
             "average_step_score": float(max(0.001, min(0.999, avg_step))),
-            "llm_quality_score": round(llm_eval["score"], 2),
+            "llm_evaluation_points": round(llm_eval["points"], 2),
             "llm_reasoning": llm_eval["reasoning"],
             "anti_cheat_multiplier": round(anti_cheat, 4),
             "breakdown": self._detailed_breakdown(state),
@@ -194,9 +194,9 @@ class Grader:
 
     def _compute_avg_step_score(self, state: EpisodeState) -> float:
         """Average normalized step score (0-1)."""
-        if not state.step_scores:
+        if not state.step_score_history:
             return 0.001
-        avg = sum(state.step_scores) / len(state.step_scores)
+        avg = sum(state.step_score_history) / len(state.step_score_history)
         return max(0.001, min(0.999, avg))
 
     def _anti_cheat_adjustment(self, state: EpisodeState) -> float:

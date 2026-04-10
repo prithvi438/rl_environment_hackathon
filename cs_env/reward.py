@@ -92,7 +92,7 @@ class RewardCalculator:
             reward=float(final),
             done=done,
             reason=reason,
-            scoring_breakdown={k: round(v, 2) for k, v in breakdown.items()},
+            evaluation_breakdown={k: round(v, 2) for k, v in breakdown.items()},
             penalties={k: round(v, 4) for k, v in penalties.items()},
         )
 
