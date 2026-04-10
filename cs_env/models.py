@@ -194,8 +194,8 @@ class StepFeedback(BaseModel):
     Provides both a human-readable score (0.001 - 0.999) and a
     normalized reward (0.001 - 0.999) for RL training.
     """
-    step_score: float = Field(ge=0.0, le=1.0, description="Score from 0-1")
-    reward: float = Field(ge=0.0, le=1.0, description="Normalized reward 0-1")
+    step_score: float = Field(gt=0.0, lt=1.0, description="Score from 0-1")
+    reward: float = Field(gt=0.0, lt=1.0, description="Normalized reward 0-1")
     done: bool = False
     reason: Optional[str] = None
     scoring_breakdown: dict[str, float] = Field(default_factory=dict)

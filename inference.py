@@ -347,7 +347,7 @@ def main() -> None:
 
         results = {
             "scores": all_scores,
-            "average_score": round(avg, 4),
+            "average_score": float(avg),
             "curriculum": stats,
         }
         with open("results.json", "w") as f:

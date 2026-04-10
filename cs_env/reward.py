@@ -88,8 +88,8 @@ class RewardCalculator:
         reason = self._get_done_reason(action, state) if done else None
 
         return StepFeedback(
-            step_score=round(final, 4),
-            reward=round(final, 4),
+            step_score=float(final),
+            reward=float(final),
             done=done,
             reason=reason,
             scoring_breakdown={k: round(v, 2) for k, v in breakdown.items()},
