@@ -42,10 +42,9 @@ function getActionIcon(type) {
     return icons[type.toLowerCase()] || icons.reply;
 }
 
-// Map score to CSS tag
 function getScoreTag(score) {
-    if (score >= 80) return { class: 'tag-success', label: 'OPTIMAL' };
-    if (score >= 50) return { class: 'tag-warning', label: 'FAIR' };
+    if (score >= 0.80) return { class: 'tag-success', label: 'OPTIMAL' };
+    if (score >= 0.50) return { class: 'tag-warning', label: 'FAIR' };
     return { class: 'tag-danger', label: 'POOR' };
 }
 
@@ -172,7 +171,7 @@ async function updateDashboard() {
                             <span class="feed-icon">${icon}</span>
                             ${action.type.replace(/_/g, ' ')}
                         </span>
-                        <span class="tag ${scoreInfo.class}">${score} PTS</span>
+                        <span class="tag ${scoreInfo.class}">${score.toFixed(2)} PTS</span>
                     </div>
                     <div class="feed-content">
                         ${detailText}

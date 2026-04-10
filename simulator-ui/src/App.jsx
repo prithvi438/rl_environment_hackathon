@@ -300,8 +300,8 @@ export default function App() {
                           {action.type?.replace(/_/g, ' ')}
                         </span>
                       </div>
-                      <Tag type={(state?.step_scores?.[i] || 0) >= 80 ? 'success' : (state?.step_scores?.[i] || 0) >= 50 ? 'warning' : 'danger'}>
-                        {state?.step_scores?.[i] || 0} pts
+                      <Tag type={(state?.step_scores?.[i] || 0) >= 0.80 ? 'success' : (state?.step_scores?.[i] || 0) >= 0.50 ? 'warning' : 'danger'}>
+                        {(state?.step_scores?.[i] || 0).toFixed(2)} pts
                       </Tag>
                     </div>
                     <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed">

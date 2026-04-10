@@ -81,7 +81,7 @@ class RewardCalculator:
         mult = _DIFFICULTY_MULTIPLIER.get(state.difficulty, 1.0)
 
         # Final score: clamp to 0.001-0.999
-        final = max(0.001, min(0.999, (raw_score * mult) / 100.0 - (total_penalty)))
+        final = max(0.001, min(0.999, (raw_score * mult) - (total_penalty)))
 
         # Check if episode should end
         done = self._check_done(action, state)
@@ -111,17 +111,17 @@ class RewardCalculator:
             expected_idx = gold_types.index(action_type)
             distance = abs(step - expected_idx)
             if distance <= 1:
-                return 30.0
+                return 0.30
             elif distance <= 3:
-                return 22.0
+                return 0.22
             else:
-                return 15.0
+                return 0.15
 
         # Action type not in gold but still reasonable
         if action_type in ("reply", "lookup"):
-            return 10.0
+            return 0.10
 
-        return 5.0
+        return 0.05
 
     def _score_action_correctness(self, action: Action, state: EpisodeState) -> float:
         """Is the action content correct? (0-25)"""
@@ -135,17 +135,17 @@ class RewardCalculator:
                     msg_lower = action.message.lower()
                     matches = sum(1 for kw in keywords if kw.lower() in msg_lower)
                     ratio = matches / max(len(keywords), 1)
-                    score = max(score, ratio * 25.0)
+                    score = max(score, ratio * 0.25)
 
             # Minimum score for non-empty relevant replies
             if score == 0.0 and len(action.message) > 20:
-                score = 8.0
+                score = 0.08
 
         elif action.type == ActionType.LOOKUP:
             # Check if this is a required tool lookup
             tool = action.tool_name.value if action.tool_name else ""
             if tool in state.required_tools:
-                score = 20.0
+                score = 0.20
                 # Bonus for correct input
                 for gold in state.gold_actions:
                     if gold.get("tool") == tool and "input" in gold:
@@ -153,16 +153,16 @@ class RewardCalculator:
                             action.tool_input.get(k) == v
                             for k, v in gold["input"].items()
                         ):
-                            score = 25.0
+                            score = 0.25
                             break
             else:
-                score = 10.0  # Exploratory lookup
+                score = 0.10  # Exploratory lookup
 
         elif action.type == ActionType.ESCALATE:
             if "escalate" in state.required_actions:
-                score = 25.0
+                score = 0.25
             else:
-                score = 10.0  # Unnecessary escalation
+                score = 0.10  # Unnecessary escalation
 
         elif action.type == ActionType.REFUND:
             if "refund" in state.required_actions:
@@ -172,42 +172,42 @@ class RewardCalculator:
                 inp = action.tool_input or {}
                 if inp.get("order_id") == exp_order:
                     if exp_amount and abs(float(inp.get("amount", 0)) - exp_amount) < 0.01:
-                        score = 25.0
+                        score = 0.25
                     else:
-                        score = 18.0
+                        score = 0.18
                 else:
-                    score = 8.0
+                    score = 0.08
             else:
-                score = 3.0  # Wrong action
+                score = 0.03  # Wrong action
 
         elif action.type == ActionType.CLOSE:
             if "close" in state.required_actions:
                 # Only good if we've made progress
                 if state.step_count >= 2:
-                    score = 25.0
+                    score = 0.25
                 else:
-                    score = 5.0  # Premature close
+                    score = 0.05  # Premature close
             else:
-                score = 5.0
+                score = 0.05
 
         elif action.type == ActionType.INTERNAL_NOTE:
             if "internal_note" in state.required_actions:
-                score = 20.0
+                score = 0.20
             else:
-                score = 12.0
+                score = 0.12
 
         elif action.type == ActionType.UPDATE_TICKET:
             if "update_ticket" in state.required_actions:
-                score = 20.0
+                score = 0.20
             else:
-                score = 10.0
+                score = 0.10
 
         return score
 
     def _score_tone_handling(self, action: Action, state: EpisodeState) -> float:
         """Did the agent handle sentiment appropriately? (0-15)"""
         if action.type != ActionType.REPLY or not action.message:
-            return 7.0  # Neutral for non-reply actions
+            return 0.07  # Neutral for non-reply actions
 
         sentiment = state.ticket.sentiment
         msg = action.message.lower()
@@ -216,21 +216,21 @@ class RewardCalculator:
             empathy_words = ["sorry", "apologize", "understand", "frustrat", "inconvenience"]
             matches = sum(1 for w in empathy_words if w in msg)
             if matches >= 2:
-                return 15.0
+                return 0.15
             elif matches == 1:
-                return 10.0
+                return 0.10
             else:
-                return 3.0
+                return 0.03
 
         elif sentiment == Sentiment.CONFUSED:
             clarity_words = ["let me explain", "here's how", "step", "first", "simply"]
             matches = sum(1 for w in clarity_words if w in msg)
-            return min(15.0, 8.0 + matches * 2.5)
+            return min(0.15, 0.08 + matches * 2.5)
 
         else:  # NEUTRAL or POSITIVE
             professional_words = ["happy to help", "assist", "please", "thank"]
             matches = sum(1 for w in professional_words if w in msg)
-            return min(15.0, 8.0 + matches * 2.0)
+            return min(0.15, 0.08 + matches * 2.0)
 
     def _score_tool_usage(self, action: Action, state: EpisodeState) -> float:
         """Was the right tool used correctly? (0-15)"""
@@ -239,16 +239,16 @@ class RewardCalculator:
             required = state.required_tools
             used = set(state.tools_used)
             if required and not used and state.step_count > 2:
-                return 3.0  # Should have used tools by now
-            return 8.0  # N/A
+                return 0.03  # Should have used tools by now
+            return 0.08  # N/A
 
         tool = action.tool_name.value if action.tool_name else ""
         if tool in state.required_tools:
             if tool not in state.tools_used:
-                return 15.0  # First use of required tool
+                return 0.15  # First use of required tool
             else:
-                return 8.0  # Redundant but not wrong
-        return 6.0  # Non-required tool
+                return 0.08  # Redundant but not wrong
+        return 0.06  # Non-required tool
 
     def _score_progress(self, action: Action, state: EpisodeState) -> float:
         """How much does this step advance toward resolution? (0-15)"""
@@ -259,15 +259,15 @@ class RewardCalculator:
         if action_type in required and action_type not in done_types:
             # New required action being performed
             completion = (len(done_types & required) + 1) / max(len(required), 1)
-            return completion * 15.0
+            return completion * 0.15
 
         if action.type == ActionType.CLOSE and state.resolution_achieved:
-            return 15.0
+            return 0.15
 
         if action.type == ActionType.ESCALATE and "escalate" in required:
-            return 15.0
+            return 0.15
 
-        return 5.0
+        return 0.05
 
     # ── Penalties ─────────────────────────────────────────
 
