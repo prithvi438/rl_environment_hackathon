@@ -48,14 +48,15 @@ class CurriculumManager:
 
     @property
     def average_recent_reward(self) -> float:
-        return sum(self._history) / len(self._history) if self._history else 0.0
+        avg = sum(self._history) / len(self._history) if self._history else 0.001
+        return max(0.001, min(0.999, avg))
 
     @property
     def stats(self) -> dict:
         return {
             "current_difficulty": self._current.value,
             "episode_count": self._episodes,
-            "avg_reward": round(self.average_recent_reward, 3),
+            "avg_reward": max(0.001, min(0.999, round(self.average_recent_reward, 3))),
             "history": list(self._history),
             "promotions": self._promotions,
             "demotions": self._demotions,

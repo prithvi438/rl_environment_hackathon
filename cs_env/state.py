@@ -49,7 +49,7 @@ class EpisodeState:
 
         # Tracking
         self.step_count: int = 0
-        self.total_reward: float = 0.0
+        self.total_reward: float = 0.001
         self.step_scores: list[float] = []
         self.actions_taken: list[dict[str, Any]] = []
         self.tools_used: list[str] = []

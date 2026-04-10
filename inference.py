@@ -283,7 +283,7 @@ def run_episode(
                 action_str = f"{action.type.value}({action.tool_name.value})"
                 
             print(
-                f"[STEP] step={step_count} action={action_str} reward={reward:.2f} done={done_val} error={error_val}",
+                f"[STEP] step={step_count} action={action_str} reward={reward:.4f} done={done_val} error={error_val}",
                 flush=True,
             )
 
@@ -293,7 +293,7 @@ def run_episode(
         score = max(0.001, min(0.999, grade.get("final_score", 0.001)))
         success = score >= 0.5  # defined threshold
         success_str = str(bool(success)).lower()
-        rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+        rewards_str = ",".join(f"{r:.4f}" for r in rewards)
         print(f"[END] success={success_str} steps={step_count} rewards={rewards_str}", flush=True)
 
     return grade

@@ -76,7 +76,7 @@ class CustomerProfile(BaseModel):
     phone: Optional[str] = None
     account_tier: Literal["free", "basic", "premium", "enterprise"] = "basic"
     account_created: str
-    lifetime_value: float = 0.0
+    lifetime_value: float = 0.001
     previous_tickets: int = 0
     satisfaction_score: Optional[float] = None
 
@@ -211,7 +211,7 @@ class EnvironmentState(BaseModel):
     conversation: list[ConversationMessage] = Field(default_factory=list)
     step_count: int = 0
     max_steps: int = 15
-    total_reward: float = 0.0
+    total_reward: float = 0.001
     step_scores: list[float] = Field(default_factory=list)
     actions_taken: list[dict[str, Any]] = Field(default_factory=list)
     tools_used: list[str] = Field(default_factory=list)
