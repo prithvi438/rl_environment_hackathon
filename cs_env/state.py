@@ -50,7 +50,7 @@ class EpisodeState:
         # Tracking
         self.step_count: int = 0
         self.total_reward: float = 0.0
-        self.step_scores: list[int] = []
+        self.step_scores: list[float] = []
         self.actions_taken: list[dict[str, Any]] = []
         self.tools_used: list[str] = []
         self.tool_results: list[ToolResult] = []
@@ -140,7 +140,7 @@ class EpisodeState:
         self.tools_used.append(tool_name)
         self.tool_results.append(result)
 
-    def record_step_score(self, score: int, reward: float) -> None:
+    def record_step_score(self, score: float, reward: float) -> None:
         self.step_scores.append(score)
         self.total_reward += reward
 

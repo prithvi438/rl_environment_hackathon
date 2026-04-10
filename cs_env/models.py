@@ -191,10 +191,10 @@ class Observation(BaseModel):
 class StepFeedback(BaseModel):
     """Feedback returned after each step, including scoring.
     
-    Provides both a human-readable score (1-100) and a
-    normalized reward (0.0 - 1.0) for RL training.
+    Provides both a human-readable score (0.001 - 0.999) and a
+    normalized reward (0.001 - 0.999) for RL training.
     """
-    step_score: int = Field(ge=1, le=100, description="Score from 1-100")
+    step_score: float = Field(ge=0.0, le=1.0, description="Score from 0-1")
     reward: float = Field(ge=0.0, le=1.0, description="Normalized reward 0-1")
     done: bool = False
     reason: Optional[str] = None
@@ -212,7 +212,7 @@ class EnvironmentState(BaseModel):
     step_count: int = 0
     max_steps: int = 15
     total_reward: float = 0.0
-    step_scores: list[int] = Field(default_factory=list)
+    step_scores: list[float] = Field(default_factory=list)
     actions_taken: list[dict[str, Any]] = Field(default_factory=list)
     tools_used: list[str] = Field(default_factory=list)
     difficulty: Difficulty = Difficulty.EASY

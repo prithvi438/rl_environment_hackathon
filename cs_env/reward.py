@@ -80,16 +80,16 @@ class RewardCalculator:
         # Difficulty multiplier
         mult = _DIFFICULTY_MULTIPLIER.get(state.difficulty, 1.0)
 
-        # Final score: clamp to 1-100
-        final = max(1, min(100, int((raw_score * mult) - (total_penalty * 100))))
+        # Final score: clamp to 0.001-0.999
+        final = max(0.001, min(0.999, (raw_score * mult) / 100.0 - (total_penalty)))
 
         # Check if episode should end
         done = self._check_done(action, state)
         reason = self._get_done_reason(action, state) if done else None
 
         return StepFeedback(
-            step_score=final,
-            reward=round(final / 100.0, 4),
+            step_score=round(final, 4),
+            reward=round(final, 4),
             done=done,
             reason=reason,
             scoring_breakdown={k: round(v, 2) for k, v in breakdown.items()},

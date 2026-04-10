@@ -195,8 +195,9 @@ class Grader:
     def _compute_avg_step_score(self, state: EpisodeState) -> float:
         """Average normalized step score (0-1)."""
         if not state.step_scores:
-            return 0.0
-        return (sum(state.step_scores) / len(state.step_scores)) / 100.0
+            return 0.001
+        avg = sum(state.step_scores) / len(state.step_scores)
+        return max(0.001, min(0.999, avg))
 
     def _anti_cheat_adjustment(self, state: EpisodeState) -> float:
         """Detect and penalize exploitative behavior (multiplier 0-1)."""
