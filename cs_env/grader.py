@@ -99,6 +99,8 @@ class Grader:
         final_score = (self.DETERMINISTIC_WEIGHT * rule_score) + (self.LLM_JUDGE_WEIGHT * (llm_eval["points"] / 30.0))
         
         anti_cheat = self._anti_cheat_adjustment(state)
+        # Ensure factor is strictly in (0, 1)
+        anti_cheat = max(0.001, min(0.999, anti_cheat))
         final_score = max(0.001, min(0.999, final_score * anti_cheat))
 
         return {
@@ -107,7 +109,7 @@ class Grader:
             "average_step_score": float(max(0.001, min(0.999, avg_step))),
             "llm_evaluation_points": round(llm_eval["points"], 2),
             "llm_reasoning": llm_eval["reasoning"],
-            "anti_cheat_multiplier": round(anti_cheat, 4),
+            "anti_cheat_factor": float(anti_cheat),
             "breakdown": self._detailed_breakdown(state),
             "episode_stats": {
                 "steps_taken": state.step_count,
