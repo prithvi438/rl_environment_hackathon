@@ -103,8 +103,8 @@ class Grader:
 
         return {
             "final_score": round(final_score, 4),
-            "task_completion": round(task_completion, 4),
-            "average_step_score": round(avg_step, 4),
+            "task_completion": round(max(0.001, min(0.999, task_completion)), 4),
+            "average_step_score": round(max(0.001, min(0.999, avg_step)), 4),
             "llm_quality_score": round(llm_eval["score"], 2),
             "llm_reasoning": llm_eval["reasoning"],
             "anti_cheat_multiplier": round(anti_cheat, 4),

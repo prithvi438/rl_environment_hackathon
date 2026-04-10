@@ -290,7 +290,7 @@ def run_episode(
             if done: break
     finally:
         grade = info.get("grade", {})
-        score = grade.get("final_score", 0.001)
+        score = max(0.001, min(0.999, grade.get("final_score", 0.001)))
         success = score >= 0.5  # defined threshold
         success_str = str(bool(success)).lower()
         rewards_str = ",".join(f"{r:.2f}" for r in rewards)
@@ -332,14 +332,14 @@ def main() -> None:
             log.info("[STEP] Episode %d/%d: %s", i + 1, len(task_ids), tid)
             try:
                 grade = run_episode(client, env, task_id=tid)
-                all_scores.append(grade.get("final_score", 0.001))
+                all_scores.append(max(0.001, min(0.999, grade.get("final_score", 0.001))))
             except Exception as e:
                 log.error("[STEP] Failed: %s", e)
                 traceback.print_exc()
                 all_scores.append(0.001)
             time.sleep(SLEEP_BETWEEN_EPISODES)
 
-        avg = sum(all_scores) / len(all_scores) if all_scores else 0.0
+        avg = max(0.001, min(0.999, sum(all_scores) / len(all_scores) if all_scores else 0.001))
         stats = env.curriculum.stats
 
         log.info("[INFO] === RESULTS ===")
