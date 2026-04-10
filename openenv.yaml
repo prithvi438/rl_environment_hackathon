@@ -49,8 +49,8 @@ environment:
   max_episodes: 8
 
 scoring:
-  step_score_range: [1, 100]
-  reward_range: [0.0, 1.0]
+  step_score_range: [0.001, 0.999]
+  reward_range: [0.001, 0.999]
   final_score_formula: "0.6 * task_completion + 0.4 * average_step_score"
 
 deployment:
