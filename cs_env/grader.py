@@ -99,7 +99,7 @@ class Grader:
         final_score = (self.DETERMINISTIC_WEIGHT * rule_score) + (self.LLM_JUDGE_WEIGHT * (llm_eval["score"] / 30.0))
         
         anti_cheat = self._anti_cheat_adjustment(state)
-        final_score = max(0.0, min(1.0, final_score * anti_cheat))
+        final_score = max(0.001, min(0.999, final_score * anti_cheat))
 
         return {
             "final_score": round(final_score, 4),
