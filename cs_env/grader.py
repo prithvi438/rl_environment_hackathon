@@ -197,7 +197,7 @@ class Grader:
     def _compute_avg_step_score(self, state: EpisodeState) -> float:
         """Average normalized step score (0-1)."""
         if not state.step_score_history:
-            return 0.001
+            return 0.1
         avg = sum(state.step_score_history) / len(state.step_score_history)
         return max(0.1, min(0.9, avg))
 
