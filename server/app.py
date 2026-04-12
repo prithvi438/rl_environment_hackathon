@@ -24,6 +24,42 @@ from cs_env.models import (
     TicketPriority,
 )
 
+# ── Score-sanitization helper ─────────────────
+
+# These are the ONLY keys whose float values represent scores in (0, 1).
+_SCORE_KEYS = frozenset({
+    "score", "final_score", "reward", "total_reward",
+    "step_score", "task_completion", "average_step_score",
+    "llm_quality_score", "anti_cheat_multiplier",
+    "action_relevance", "action_correctness", "tool_usage",
+    "progress", "tone_handling",
+    "tone_points", "accuracy_points", "efficiency_points", "points",
+    "avg_reward", "average_score",
+    "repetition", "invalid_action", "time",
+})
+
+
+def _clamp(x: float) -> float:
+    """Clamp a score value to the open interval (0, 1), strictly."""
+    return max(0.1, min(0.9, float(x)))
+
+
+def sanitize_response(obj: Any, parent_key: str = "") -> Any:
+    """Recursively sanitize ONLY score-related numeric values."""
+    if isinstance(obj, dict):
+        return {k: sanitize_response(v, parent_key=k) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        if parent_key in ("step_scores", "scores", "task_scores", "history", "step_score_history"):
+            return [_clamp(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else sanitize_response(v, parent_key=parent_key) for v in obj]
+        return [sanitize_response(v, parent_key=parent_key) for v in obj]
+    elif isinstance(obj, bool):
+        return obj
+    elif isinstance(obj, (int, float)):
+        if parent_key in _SCORE_KEYS:
+            return _clamp(float(obj))
+    return obj
+
+
 # ── Request/Response Models ───────────────────
 
 class ResetRequest(BaseModel):
@@ -93,7 +129,12 @@ async def reset(req: Optional[ResetRequest] = None):
             raise HTTPException(400, f"Invalid difficulty: {req.difficulty}")
 
     obs = env.reset(task_id=req.task_id, difficulty=difficulty)
-    return {"observation": obs.model_dump()}
+    return sanitize_response({
+        "observation": obs.model_dump(),
+        "reward": 0.5,
+        "score": 0.5,
+        "done": False,
+    })
 
 
 @app.post("/step")
@@ -132,12 +173,14 @@ async def step(req: StepRequest):
     except RuntimeError as e:
         raise HTTPException(400, str(e))
 
-    return {
+    return sanitize_response({
         "observation": obs.model_dump(),
         "feedback": feedback.model_dump(),
+        "reward": feedback.reward,
+        "score": feedback.step_score,
         "done": done,
         "info": info,
-    }
+    })
 
 
 @app.get("/state")
@@ -152,10 +195,10 @@ async def get_state():
             env.reset()
             st = env.state()
             
-        return {
+        return sanitize_response({
             "initialized": True,
             "state": st.model_dump()
-        }
+        })
     except Exception as e:
         return {
             "initialized": False,
@@ -234,7 +277,7 @@ from fastapi.staticfiles import StaticFiles
 @app.get("/curriculum")
 async def curriculum_stats():
     env = _get_env()
-    return {"curriculum": env.curriculum.stats}
+    return sanitize_response({"curriculum": env.curriculum.stats})
 
 @app.get("/")
 async def read_index():

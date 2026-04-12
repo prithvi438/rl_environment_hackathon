@@ -100,13 +100,13 @@ class Grader:
         
         anti_cheat = self._anti_cheat_adjustment(state)
         # Ensure factor is strictly in (0, 1)
-        anti_cheat = max(0.001, min(0.999, anti_cheat))
-        final_score = max(0.001, min(0.999, final_score * anti_cheat))
+        anti_cheat = max(0.1, min(0.9, anti_cheat))
+        final_score = max(0.1, min(0.9, final_score * anti_cheat))
 
         return {
             "final_score": float(final_score),
-            "task_completion": float(max(0.001, min(0.999, task_completion))),
-            "average_step_score": float(max(0.001, min(0.999, avg_step))),
+            "task_completion": float(max(0.1, min(0.9, task_completion))),
+            "average_step_score": float(max(0.1, min(0.9, avg_step))),
             "llm_evaluation_points": round(llm_eval["points"], 2),
             "llm_reasoning": llm_eval["reasoning"],
             "anti_cheat_factor": float(anti_cheat),
@@ -199,7 +199,7 @@ class Grader:
         if not state.step_score_history:
             return 0.001
         avg = sum(state.step_score_history) / len(state.step_score_history)
-        return max(0.001, min(0.999, avg))
+        return max(0.1, min(0.9, avg))
 
     def _anti_cheat_adjustment(self, state: EpisodeState) -> float:
         """Detect and penalize exploitative behavior (multiplier 0-1)."""

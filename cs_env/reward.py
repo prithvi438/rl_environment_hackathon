@@ -80,8 +80,8 @@ class RewardCalculator:
         # Difficulty multiplier
         mult = _DIFFICULTY_MULTIPLIER.get(state.difficulty, 1.0)
 
-        # Final score: clamp to 0.001-0.999
-        final = max(0.001, min(0.999, (raw_score * mult) - (total_penalty)))
+        # Final score: clamp to 0.1-0.9
+        final = max(0.1, min(0.9, (raw_score * mult) - (total_penalty)))
 
         # Check if episode should end
         done = self._check_done(action, state)

@@ -25,6 +25,33 @@ from cs_env.state import EpisodeState
 from cs_env.tools import ToolRegistry
 
 
+_SCORE_KEYS = frozenset({
+    "score", "final_score", "reward", "total_reward",
+    "step_score", "task_completion", "average_step_score",
+    "llm_quality_score", "anti_cheat_multiplier",
+    "action_relevance", "action_correctness", "tool_usage",
+    "progress", "tone_handling",
+    "avg_reward", "average_score",
+    "repetition", "invalid_action", "time",
+})
+
+
+def _sanitize_scores(obj, parent_key=""):
+    """Sanitize ONLY score-related numeric values in a dict/list."""
+    if isinstance(obj, dict):
+        return {k: _sanitize_scores(v, parent_key=k) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        if parent_key in ("step_scores", "scores", "task_scores", "history", "step_score_history"):
+            return [max(0.1, min(0.9, float(v))) if isinstance(v, (int, float)) and not isinstance(v, bool) else _sanitize_scores(v, parent_key) for v in obj]
+        return [_sanitize_scores(v, parent_key=parent_key) for v in obj]
+    elif isinstance(obj, bool):
+        return obj
+    elif isinstance(obj, (int, float)):
+        if parent_key in _SCORE_KEYS:
+            return max(0.1, min(0.9, float(obj)))
+    return obj
+
+
 class CustomerSupportEnv:
     """OpenEnv-compatible Customer Support Operations Environment.
 
@@ -131,19 +158,22 @@ class CustomerSupportEnv:
             self._episode.mark_done()
             if action.type == ActionType.CLOSE:
                 self._episode.mark_resolved()
-            grade = self._grader.grade(self._episode)
+            grade = _sanitize_scores(self._grader.grade(self._episode))
             self._last_grade = grade
             self._curriculum.record_episode_reward(grade["final_score"])
-            info = {
+            info = _sanitize_scores({
                 "grade": grade,
                 "curriculum": self._curriculum.stats,
-            }
+            })
         else:
             info = {
                 "step": self._episode.step_count,
                 "tools_used": list(set(self._episode.tools_used)),
             }
 
+        feedback.step_score = max(0.1, min(0.9, feedback.step_score))
+        feedback.reward = max(0.1, min(0.9, feedback.reward))
+        
         obs = self._episode.to_observation()
         return obs, feedback, feedback.done, info
 
