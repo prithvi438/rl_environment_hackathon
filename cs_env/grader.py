@@ -70,7 +70,7 @@ RESPONSE FORMAT (ONLY JSON):
             }
         except Exception as e:
             logging.error(f"LLM Judge evaluation failed: {e}")
-            return {"points": 15.0, "reasoning": "Fallback points due to LLM error"}
+            return {"points": 0.15, "reasoning": "Fallback points due to LLM error"}
 
 class Grader:
     """Hybrid episode grader combining rules and LLM evaluation.
@@ -203,7 +203,7 @@ class Grader:
 
     def _anti_cheat_adjustment(self, state: EpisodeState) -> float:
         """Detect and penalize exploitative behavior (multiplier 0-1)."""
-        multiplier = 1.0
+        multiplier = 0.1
 
         # Penalty for too few steps (gaming the system)
         if state.step_count <= 1 and state.difficulty != Difficulty.EASY:
